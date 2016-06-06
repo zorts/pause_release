@@ -1,0 +1,6 @@
+This directory contains a program to compare the performance of two z/OS synchronization mechanisms (in several usage modes):
+
+* event control blocks
+* pause elements
+
+The code is written in a mixture of C/C++ with assembly language insertions; xlC is required to compile.
