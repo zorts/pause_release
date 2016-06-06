@@ -121,14 +121,14 @@ private:
   uint32_t* ecb_;
 };
 
-class ECB_DIRECT{
+class ECB_DIRECT_POST{
 public:
-  ECB_DIRECT()
+  ECB_DIRECT_POST()
     : ecb_((uint32_t*) getmain31(8,0))
   {
     *ecb_ = 0;
   }
-  ~ECB_DIRECT()
+  ~ECB_DIRECT_POST()
   {
     freemain31(ecb_, 8, 0);
     ecb_ = 0;
@@ -138,6 +138,51 @@ public:
   void pause()
   {
     mvs_wait(ecb_);
+  }
+
+  inline
+  void release()
+  {
+    mvs_direct_post(ecb_);
+  }
+
+  void printInfo(FILE* f, const char* label)
+  {
+    if (label){
+      fprintf(f, "%s: ", label);
+    }
+    ;
+    fprintf(f,
+            "ecb address:  0x%016" PRIx64 "\n"
+            "ecb value:    0x%" PRIx32 "\n",
+            (uint64_t) ecb_, *ecb_);
+    fflush(f);
+  }
+
+private:
+  // prohibit copy/assign; do not implement
+  ECB_DIRECT_POST(const ECB_DIRECT_POST&);
+  ECB_DIRECT_POST& operator=(const ECB_DIRECT_POST&);
+  uint32_t* ecb_;
+};
+
+class ECB_DIRECT_WAIT{
+public:
+  ECB_DIRECT_WAIT()
+    : ecb_((uint32_t*) getmain31(8,0))
+  {
+    *ecb_ = 0;
+  }
+  ~ECB_DIRECT_WAIT()
+  {
+    freemain31(ecb_, 8, 0);
+    ecb_ = 0;
+  }
+
+  inline
+  void pause()
+  {
+    mvs_direct_wait(ecb_);
   }
 
   inline
@@ -161,8 +206,53 @@ public:
 
 private:
   // prohibit copy/assign; do not implement
-  ECB_DIRECT(const ECB_DIRECT&);
-  ECB_DIRECT& operator=(const ECB_DIRECT&);
+  ECB_DIRECT_WAIT(const ECB_DIRECT_WAIT&);
+  ECB_DIRECT_WAIT& operator=(const ECB_DIRECT_WAIT&);
+  uint32_t* ecb_;
+};
+
+class ECB_DIRECT_WAIT_POST{
+public:
+  ECB_DIRECT_WAIT_POST()
+    : ecb_((uint32_t*) getmain31(8,0))
+  {
+    *ecb_ = 0;
+  }
+  ~ECB_DIRECT_WAIT_POST()
+  {
+    freemain31(ecb_, 8, 0);
+    ecb_ = 0;
+  }
+
+  inline
+  void pause()
+  {
+    mvs_direct_wait(ecb_);
+  }
+
+  inline
+  void release()
+  {
+    mvs_direct_post(ecb_);
+  }
+
+  void printInfo(FILE* f, const char* label)
+  {
+    if (label){
+      fprintf(f, "%s: ", label);
+    }
+    ;
+    fprintf(f,
+            "ecb address:  0x%016" PRIx64 "\n"
+            "ecb value:    0x%" PRIx32 "\n",
+            (uint64_t) ecb_, *ecb_);
+    fflush(f);
+  }
+
+private:
+  // prohibit copy/assign; do not implement
+  ECB_DIRECT_WAIT_POST(const ECB_DIRECT_WAIT_POST&);
+  ECB_DIRECT_WAIT_POST& operator=(const ECB_DIRECT_WAIT_POST&);
   uint32_t* ecb_;
 };
 
@@ -326,7 +416,9 @@ int main(int argc, char* const argv[])
   }
 
   pingPong<ECB>(N, verbose, "EventControlBlock");
-  pingPong<ECB_DIRECT>(N, verbose, "EventControlBlock_Direct");
+  pingPong<ECB_DIRECT_POST>(N, verbose, "EventControlBlock_Direct_Post");
+  pingPong<ECB_DIRECT_WAIT>(N, verbose, "EventControlBlock_Direct_Wait");
+  pingPong<ECB_DIRECT_WAIT_POST>(N, verbose, "EventControlBlock_Direct_Wait_Post");
   pingPong<PauseElement>(N, verbose, "PauseElement");
   transferAndPause<PauseElement>(N, verbose, "PauseElement");
   transfer<PauseElement>(N, verbose, "PauseElement");
